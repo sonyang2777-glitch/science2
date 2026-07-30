@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>생태 피라미드와 생태계 평형 탐구 시뮬레이터</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Fonts (Noto Sans KR) -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Noto Sans KR', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f8fafc;
+        }
+        .pyramid-bar {
+            transition: width 0.5s ease-in-out, background-color 0.3s ease;
+        }
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            .print-only {
+                display: block !important;
+            }
+            body {
+                background: white;
+            }
+            .report-card {
+                border: 1px solid #cbd5e1 !important;
+                box-shadow: none !important;
+            }
+        }
+    </style>
+</head>
+<body class="text-slate-800 antialiased min-h-screen flex flex-col">
+
+    <header class="bg-emerald-800 text-white shadow-md sticky top-0 z-50 no-print">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap justify-between items-center gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="bg-emerald-600 p-2 rounded-xl text-emerald-100 shadow-inner">
+                    <i data-lucide="trees" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <div class="text-xs font-semibold tracking-wider text-emerald-200 uppercase">고등학교 통합과학 [10통과2-02-02]</div>
+                    <h1 class="text-lg sm:text-xl font-bold tracking-tight">생태 피라미드와 생태계 평형 탐구 시뮬레이터</h1>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <a href="#simulator-section" class="px-3 py-1.5 text-xs font-medium bg-emerald-700 hover:bg-emerald-600 rounded-lg transition text-emerald-100 flex items-center gap-1">
+                    <i data-lucide="sliders" class="w-3.5 h-3.5"></i> 시뮬레이터
+                </a>
+                <a href="#report-section" class="px-3 py-1.5 text-xs font-medium bg-amber-500 hover:bg-amber-400 text-slate-900 rounded-lg transition font-semibold flex items-center gap-1 shadow-sm">
+                    <i data-lucide="file-text" class="w-3.5 h-3.5"></i> 탐구 보고서
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full space-y-8">
+
+        <!-- Curriculum Info Banner -->
+        <section class="bg-white rounded-2xl p-4 sm:p-5 border border-emerald-100 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4 no-print">
+            <div class="flex items-start gap-3">
+                <div class="p-2 bg-emerald-50 text-emerald-700 rounded-lg mt-0.5">
+                    <i data-lucide="compass" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h2 class="text-sm font-bold text-slate-900">학습 성취기준 및 탐구 목표</h2>
+                    <p class="text-xs text-slate-600 mt-0.5 leading-relaxed">
+                        먹이 관계와 생태 피라미드를 중심으로 생태계 평형이 유지되는 과정(음성 피드백)을 이해하고, 개체수 변화가 상위·하위 영양 단계에 미치는 영향을 단계별로 추론하여 분석합니다.
+                    </p>
+                </div>
+            </div>
+            <div class="flex gap-2 shrink-0">
+                <button onclick="loadPreset('normal')" class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 bg-slate-50 hover:bg-emerald-50 hover:text-emerald-700 transition">
+                    🌿 정상 평형 상태
+                </button>
+                <button onclick="loadPreset('primary_up')" class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-100 transition">
+                    🦗 1차 소비자 급증
+                </button>
+                <button onclick="loadPreset('producer_down')" class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-red-200 bg-red-50 text-red-800 hover:bg-red-100 transition">
+                    🌵 가뭄(생산자 감소)
+                </button>
+            </div>
+        </section>
+
+        <!-- SECTION 1: SIMULATOR WORKSPACE -->
+        <section id="simulator-section" class="space-y-6">
+            <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+                <div class="flex items-center gap-2">
+                    <div class="w-3 h-6 bg-emerald-600 rounded-full"></div>
+                    <h2 class="text-xl font-bold text-slate-800">1. 생태계 피라미드 시뮬레이터</h2>
+                </div>
+                <span class="text-xs text-slate-500 bg-slate-100 px-2.5 py-1 rounded-md font-medium">단계별 변화 추적 모드</span>
+            </div>
+
+            <!-- Grid Layout for Controls vs Visualization -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+                <!-- Left Column: Controls & Species Selection (5 cols) -->
+                <div class="lg:col-span-5 space-y-5">
+                    
+                    <!-- Species Selection Card -->
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                        <div class="flex items-center justify-between">
+                            <h3 class="font-bold text-sm text-slate-800 flex items-center gap-2">
+                                <i data-lucide="layers" class="w-4 h-4 text-emerald-600"></i> 생물종 예시 설정 (피라미드 구성)
+                            </h3>
+                            <span class="text-[11px] text-slate-400">생태계 유형 선택</span>
+                        </div>
+
+                        <!-- Ecosystem Type Selector -->
+                        <div class="grid grid-cols-3 gap-2">
+                            <button onclick="setEcosystemType('meadow')" id="btn-eco-meadow" class="eco-type-btn p-2 rounded-xl text-xs font-medium border text-center transition bg-emerald-50 border-emerald-500 text-emerald-800 font-bold">
+                                🌾 초원 생태계
+                            </button>
+                            <button onclick="setEcosystemType('ocean')" id="btn-eco-ocean" class="eco-type-btn p-2 rounded-xl text-xs font-medium border text-center transition bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100">
+                                🌊 해양 생태계
+                            </button>
+                            <button onclick="setEcosystemType('forest')" id="btn-eco-forest" class="eco-type-btn p-2 rounded-xl text-xs font-medium border text-center transition bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100">
+                                🌲 산림 생태계
+                            </button>
+                        </div>
+
+                        <!-- Selected Species Display -->
+                        <div class="bg-slate-50 rounded-xl p-3 border border-slate-100 text-xs space-y-2">
+                            <div class="flex justify-between items-center text-slate-700">
+                                <span class="font-semibold text-rose-600">2차 소비자:</span>
+                                <span id="species-consumer2-name" class="font-bold">개구리 / 매</span>
+                            </div>
+                            <div class="flex justify-between items-center text-slate-700">
+                                <span class="font-semibold text-amber-600">1차 소비자:</span>
+                                <span id="species-consumer1-name" class="font-bold">메뚜기 / 토끼</span>
+                            </div>
+                            <div class="flex justify-between items-center text-slate-700">
+                                <span class="font-semibold text-emerald-600">생산자:</span>
+                                <span id="species-producer-name" class="font-bold">풀 / 벼</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sliders Control Card -->
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-5">
+                        <div class="flex items-center justify-between">
+                            <h3 class="font-bold text-sm text-slate-800 flex items-center gap-2">
+                                <i data-lucide="sliders" class="w-4 h-4 text-emerald-600"></i> 개체수 수치 조절 (초기 조건)
+                            </h3>
+                            <button onclick="resetValues()" class="text-xs text-slate-500 hover:text-slate-800 underline flex items-center gap-1">
+                                <i data-lucide="rotate-ccw" class="w-3 h-3"></i> 초기화
+                            </button>
+                        </div>
+
+                        <!-- Slider 2nd Consumer -->
+                        <div class="space-y-1.5">
+                            <div class="flex justify-between items-center text-xs font-medium">
+                                <label for="slider-c2" class="text-slate-700 flex items-center gap-1">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block"></span>
+                                    2차 소비자 (<span id="lbl-c2-name">매</span>)
+                                </label>
+                                <span class="font-bold text-rose-600 text-sm"><span id="val-c2">10</span> 개체</span>
+                            </div>
+                            <input type="range" id="slider-c2" min="1" max="50" value="10" step="1" 
+                                class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-rose-500" oninput="onSliderChange()">
+                            <div class="flex justify-between text-[10px] text-slate-400">
+                                <span>1</span>
+                                <span>기준: 10</span>
+                                <span>50</span>
+                            </div>
+                        </div>
+
+                        <!-- Slider 1st Consumer -->
+                        <div class="space-y-1.5">
+                            <div class="flex justify-between items-center text-xs font-medium">
+                                <label for="slider-c1" class="text-slate-700 flex items-center gap-1">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>
+                                    1차 소비자 (<span id="lbl-c1-name">메뚜기</span>)
+                                </label>
+                                <span class="font-bold text-amber-600 text-sm"><span id="val-c1">100</span> 개체</span>
+                            </div>
+                            <input type="range" id="slider-c1" min="10" max="400" value="100" step="10" 
+                                class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-amber-500" oninput="onSliderChange()">
+                            <div class="flex justify-between text-[10px] text-slate-400">
+                                <span>10</span>
+                                <span>기준: 100</span>
+                                <span>400</span>
+                            </div>
+                        </div>
+
+                        <!-- Slider Producer -->
+                        <div class="space-y-1.5">
+                            <div class="flex justify-between items-center text-xs font-medium">
+                                <label for="slider-prod" class="text-slate-700 flex items-center gap-1">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>
+                                    생산자 (<span id="lbl-prod-name">풀</span>)
+                                </label>
+                                <span class="font-bold text-emerald-600 text-sm"><span id="val-prod">1000</span> 개체</span>
+                            </div>
+                            <input type="range" id="slider-prod" min="100" max="2000" value="1000" step="50" 
+                                class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-500" oninput="onSliderChange()">
+                            <div class="flex justify-between text-[10px] text-slate-400">
+                                <span>100</span>
+                                <span>기준: 1000</span>
+                                <span>2000</span>
+                            </div>
+                        </div>
+
+                        <div class="p-3 bg-blue-50/70 border border-blue-100 rounded-xl text-xs text-blue-800 flex items-start gap-2">
+                            <i data-lucide="info" class="w-4 h-4 text-blue-500 shrink-0 mt-0.5"></i>
+                            <span>개체수 슬라이더를 조절해 변화 상황<strong>(Step 0)</strong>을 유도한 후, [다음] 또는 [자동] 재생 버튼을 눌러 피드백 과정을 관찰하세요.</span>
+                        </div>
+                    </div>
+
+                    <!-- Step Controls Card -->
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                        <div class="flex items-center justify-between">
+                            <h3 class="font-bold text-sm text-slate-800 flex items-center gap-2">
+                                <i data-lucide="play-circle" class="w-4 h-4 text-emerald-600"></i> 단계별 시뮬레이션 제어
+                            </h3>
+                            <span id="step-badge" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
+                                Step 0 (초기 변형)
+                            </span>
+                        </div>
+
+                        <!-- Step Control Buttons -->
+                        <div class="grid grid-cols-4 gap-2">
+                            <button onclick="prevStep()" id="btn-prev" class="py-2.5 px-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition flex items-center justify-center gap-1 disabled:opacity-40">
+                                <i data-lucide="chevron-left" class="w-4 h-4"></i> 이전
+                            </button>
+                            <button onclick="nextStep()" id="btn-next" class="py-2.5 px-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold transition flex items-center justify-center gap-1">
+                                다음 <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                            </button>
+                            <button onclick="toggleAutoPlay()" id="btn-autoplay" class="py-2.5 px-2 bg-amber-500 hover:bg-amber-600 text-slate-900 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1">
+                                <i data-lucide="play" id="icon-play" class="w-4 h-4"></i> <span id="txt-play">자동</span>
+                            </button>
+                            <button onclick="resetSimulation()" class="py-2.5 px-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition flex items-center justify-center gap-1">
+                                <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> 리셋
+                            </button>
+                        </div>
+
+                        <!-- Step Progress Indicator -->
+                        <div class="space-y-1">
+                            <div class="flex justify-between text-[11px] text-slate-500">
+                                <span>시간 경과 (단계별)</span>
+                                <span>단계 <span id="current-step-num">0</span> / 4</span>
+                            </div>
+                            <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden flex">
+                                <div id="step-progress-bar" class="bg-emerald-500 h-full transition-all duration-300" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Right Column: Visual Pyramid & Data Chart & Analysis Guide (7 cols) -->
+                <div class="lg:col-span-7 space-y-5">
+
+                    <!-- Visual Ecological Pyramid Display -->
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                        <div class="flex justify-between items-center">
+                            <h3 class="font-bold text-sm text-slate-800 flex items-center gap-2">
+                                <i data-lucide="triangle" class="w-4 h-4 text-emerald-600"></i> 실시간 생태 피라미드 모형
+                            </h3>
+                            <span id="pyramid-status-tag" class="text-xs px-2.5 py-1 rounded-full font-bold bg-emerald-100 text-emerald-800">
+                                ⚖️ 정상 생태계 평형
+                            </span>
+                        </div>
+
+                        <!-- Pyramid Graphic Container -->
+                        <div class="bg-slate-50 p-6 rounded-xl border border-slate-100 flex flex-col items-center justify-end space-y-3 min-h-[260px] relative overflow-hidden">
+                            
+                            <div class="absolute inset-0 opacity-10 bg-[radial-gradient(#334155_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none"></div>
+
+                            <!-- 2nd Consumer Layer -->
+                            <div class="w-full flex flex-col items-center z-10">
+                                <div class="flex justify-between w-full max-w-md text-xs font-bold text-rose-700 mb-1 px-2">
+                                    <span class="flex items-center gap-1">
+                                        <i data-lucide="crown" class="w-3.5 h-3.5"></i> 2차 소비자 (<span id="pyr-c2-name">매</span>)
+                                    </span>
+                                    <span><span id="pyr-c2-val">10</span> 개체</span>
+                                </div>
+                                <div id="pyr-bar-c2" class="pyramid-bar h-12 bg-gradient-to-r from-rose-500 to-rose-400 rounded-lg shadow-sm flex items-center justify-center text-white font-bold text-xs border border-rose-300" style="width: 25%;">
+                                    <span id="pyr-bar-c2-txt" class="drop-shadow-sm">10</span>
+                                </div>
+                            </div>
+
+                            <!-- 1st Consumer Layer -->
+                            <div class="w-full flex flex-col items-center z-10">
+                                <div class="flex justify-between w-full max-w-md text-xs font-bold text-amber-700 mb-1 px-2">
+                                    <span class="flex items-center gap-1">
+                                        <i data-lucide="bug" class="w-3.5 h-3.5"></i> 1차 소비자 (<span id="pyr-c1-name">메뚜기</span>)
+                                    </span>
+                                    <span><span id="pyr-c1-val">100</span> 개체</span>
+                                </div>
+                                <div id="pyr-bar-c1" class="pyramid-bar h-12 bg-gradient-to-r from-amber-500 to-amber-400 rounded-lg shadow-sm flex items-center justify-center text-white font-bold text-xs border border-amber-300" style="width: 50%;">
+                                    <span id="pyr-bar-c1-txt" class="drop-shadow-sm">100</span>
+                                </div>
+                            </div>
+
+                            <!-- Producer Layer -->
+                            <div class="w-full flex flex-col items-center z-10">
+                                <div class="flex justify-between w-full max-w-md text-xs font-bold text-emerald-700 mb-1 px-2">
+                                    <span class="flex items-center gap-1">
+                                        <i data-lucide="sprout" class="w-3.5 h-3.5"></i> 생산자 (<span id="pyr-prod-name">풀</span>)
+                                    </span>
+                                    <span><span id="pyr-prod-val">1000</span> 개체</span>
+                                </div>
+                                <div id="pyr-bar-prod" class="pyramid-bar h-12 bg-gradient-to-r from-emerald-600 to-emerald-500 rounded-lg shadow-sm flex items-center justify-center text-white font-bold text-xs border border-emerald-400" style="width: 90%;">
+                                    <span id="pyr-bar-prod-txt" class="drop-shadow-sm">1000</span>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Step Line Chart Card -->
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                        <div class="flex justify-between items-center">
+                            <h3 class="font-bold text-sm text-slate-800 flex items-center gap-2">
+                                <i data-lucide="line-chart" class="w-4 h-4 text-emerald-600"></i> 단계별 개체수 변화 추이 그래프
+                            </h3>
+                            <span class="text-[11px] text-slate-400">Step 0 ~ Step 4 피드백 과정</span>
+                        </div>
+                        <div class="h-48 relative">
+                            <canvas id="stepChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- DYNAMIC DATA ANALYSIS GUIDE -->
+                    <div class="bg-gradient-to-br from-indigo-900 to-slate-900 text-white p-5 rounded-2xl shadow-md space-y-3 border border-indigo-700/50 relative overflow-hidden">
+                        <div class="absolute -right-6 -bottom-6 opacity-10 text-white pointer-events-none">
+                            <i data-lucide="brain-circuit" class="w-36 h-36"></i>
+                        </div>
+
+                        <div class="flex items-center justify-between border-b border-indigo-700/60 pb-2.5">
+                            <div class="flex items-center gap-2">
+                                <div class="p-1.5 bg-indigo-500/20 text-indigo-300 rounded-lg border border-indigo-400/30">
+                                    <i data-lucide="sparkles" class="w-4 h-4"></i>
+                                </div>
+                                <h3 class="font-bold text-sm text-indigo-100">자동 데이터 분석 가이드 (원인과 결과 추론)</h3>
+                            </div>
+                            <span class="text-[10px] bg-indigo-500/30 text-indigo-200 px-2 py-0.5 rounded border border-indigo-400/30">
+                                탐구 도우미
+                            </span>
+                        </div>
+
+                        <!-- Dynamic Output Content -->
+                        <div id="analysis-guide-content" class="text-xs text-indigo-100 leading-relaxed space-y-2">
+                            <!-- JS Populated -->
+                        </div>
+
+                        <!-- Guided Question Prompt for Students -->
+                        <div class="bg-indigo-950/60 p-3 rounded-xl border border-indigo-800/60 flex items-start gap-2.5 text-xs text-indigo-200">
+                            <i data-lucide="help-circle" class="w-4 h-4 text-amber-400 shrink-0 mt-0.5"></i>
+                            <div>
+                                <strong class="text-amber-300 block mb-0.5">탐구 질문 :</strong>
+                                <span id="guide-question-text">생태계 평형이 유지되는 과정에서 먹이 그물과 피드백 작용이 왜 중요한지 생각해보세요.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </section>
+
+        <!-- SECTION 2: EXPLORATION REPORT PAGE FORM -->
+        <section id="report-section" class="pt-6 border-t-2 border-slate-200 space-y-6">
+            
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-200 pb-3 no-print">
+                <div class="flex items-center gap-2">
+                    <div class="w-3 h-6 bg-amber-500 rounded-full"></div>
+                    <h2 class="text-xl font-bold text-slate-800">2. 생태계 평형 탐구 보고서 작성</h2>
+                </div>
+                <div class="flex items-center gap-2 flex-wrap">
+                    <button onclick="captureCurrentDataToReport()" class="px-3.5 py-2 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-sm transition flex items-center gap-1.5">
+                        <i data-lucide="download-cloud" class="w-4 h-4"></i> 결과 데이터 불러오기
+                    </button>
+                    <button onclick="submitToGoogleSheet()" class="px-3.5 py-2 text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-sm transition flex items-center gap-1.5">
+                        <i data-lucide="send" class="w-4 h-4"></i> 구글 제출 (GAS 서버)
+                    </button>
+                    <button onclick="window.print()" class="px-3.5 py-2 text-xs font-bold bg-slate-800 hover:bg-slate-900 text-white rounded-xl shadow-sm transition flex items-center gap-1.5">
+                        <i data-lucide="printer" class="w-4 h-4"></i> 인쇄 / PDF 저장
+                    </button>
+                </div>
+            </div>
+
+            <!-- Printable Report Document Container -->
+            <div class="bg-white p-6 sm:p-10 rounded-2xl border border-slate-200 shadow-md space-y-8 report-card max-w-4xl mx-auto">
+                
+                <!-- Report Header -->
+                <div class="border-b-2 border-slate-800 pb-4 text-center space-y-2">
+                    <div class="text-xs font-bold text-emerald-700 uppercase tracking-widest">High School Integrated Science Inquiry Report</div>
+                    <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900">생태 피라미드 및 생태계 평형 탐구 보고서</h2>
+                    <p class="text-xs text-slate-500">교육과정 단원: [10통과2-02-02] 먹이 관계와 생태 피라미드</p>
+                </div>
+
+                <!-- Student Metadata Form -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs">
+                    <div class="space-y-1">
+                        <label class="font-bold text-slate-700 block">성명 (작성자)</label>
+                        <input type="text" id="report-student-name" placeholder="예: 홍길동" class="w-full p-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="font-bold text-slate-700 block">학번 / 모둠</label>
+                        <input type="text" id="report-student-id" placeholder="예: 1학년 2반 15번 (3모둠)" class="w-full p-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="font-bold text-slate-700 block">탐구 일시</label>
+                        <input type="text" id="report-date" class="w-full p-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <!-- Item 1: Hypothesis -->
+                <div class="space-y-3">
+                    <h3 class="text-base font-bold text-slate-900 flex items-center gap-2 border-l-4 border-emerald-600 pl-2.5">
+                        1. 탐구 목표 및 내가 세운 가설
+                    </h3>
+                    
+                    <div class="space-y-2">
+                        <label class="block text-xs font-semibold text-slate-600">📌 내가 세운 가설 (시뮬레이션 전 예측)</label>
+                        <textarea id="report-hypothesis" rows="3" placeholder="예시: 특정 생물의 개체수가 일시적으로 증가하더라도, 먹이 관계에 의한 피드백 작용으로 생태계는 시간이 지남에 따라 다시 평형 상태를 회복할 것이다." 
+                            class="w-full p-3 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none leading-relaxed"></textarea>
+                    </div>
+                </div>
+
+                <!-- Item 2: Simulation Result Data Table -->
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-base font-bold text-slate-900 flex items-center gap-2 border-l-4 border-emerald-600 pl-2.5">
+                            2. 시뮬레이션 결과 데이터
+                        </h3>
+                        <button onclick="captureCurrentDataToReport()" class="text-xs text-emerald-700 font-bold hover:underline no-print flex items-center gap-1">
+                            <i data-lucide="refresh-cw" class="w-3 h-3"></i> 현재 데이터로 갱신
+                        </button>
+                    </div>
+
+                    <!-- Result Data Table -->
+                    <div class="overflow-x-auto border border-slate-200 rounded-xl">
+                        <table class="w-full text-xs text-center">
+                            <thead class="bg-slate-100 font-bold text-slate-700 border-b border-slate-200">
+                                <tr>
+                                    <th class="p-2.5 border-r border-slate-200">구분 (단계)</th>
+                                    <th class="p-2.5 border-r border-slate-200 text-emerald-800">생산자 (<span id="rep-prod-name">풀</span>)</th>
+                                    <th class="p-2.5 border-r border-slate-200 text-amber-800">1차 소비자 (<span id="rep-c1-name">메뚜기</span>)</th>
+                                    <th class="p-2.5 border-r border-slate-200 text-rose-800">2차 소비자 (<span id="rep-c2-name">매</span>)</th>
+                                    <th class="p-2.5">생태계 상태 평가</th>
+                                </tr>
+                            </thead>
+                            <tbody id="report-data-tbody" class="divide-y divide-slate-200 text-slate-700">
+                                <tr>
+                                    <td colspan="5" class="p-4 text-slate-400 italic">
+                                        상단의 [결과 데이터 불러오기] 버튼을 누르면 현재 조절된 단계별 수치가 자동으로 기록됩니다.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Item 3: Data Analysis -->
+                <div class="space-y-3">
+                    <h3 class="text-base font-bold text-slate-900 flex items-center gap-2 border-l-4 border-emerald-600 pl-2.5">
+                        3. 데이터 분석 및 생물학적 원인 추론
+                    </h3>
+                    <div class="space-y-2">
+                        <p class="text-xs text-slate-500">
+                            개체수 변화에 따른 먹이 관계(피드백 작용)의 단계별 일어난 변화 원인과 결과를 서술하세요.
+                        </p>
+                        <textarea id="report-analysis" rows="4" placeholder="시뮬레이션 데이터에서 나타난 개체수 증감 원인과 피드백 작용 과정을 구체적으로 서술하세요." 
+                            class="w-full p-3 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none leading-relaxed"></textarea>
+                    </div>
+                </div>
+
+                <!-- Item 4: Conclusion & Environmental Impact -->
+                <div class="space-y-3">
+                    <h3 class="text-base font-bold text-slate-900 flex items-center gap-2 border-l-4 border-emerald-600 pl-2.5">
+                        4. 최종 결론 및 환경 변화가 생태계에 미치는 영향 추론
+                    </h3>
+                    <div class="space-y-2">
+                        <p class="text-xs text-slate-500">
+                            인간 활동(남획, 서식지 파괴)이나 기후 변화(가뭄 등)로 인해 생태계 평형이 파괴되었을 때의 영향 및 보전 방안에 대해 서술하세요.
+                        </p>
+                        <textarea id="report-conclusion" rows="5" placeholder="가설 검증 결과와 함께, 환경 변화가 생태계 평형에 미치는 치명적 영향 및 생태계 보전을 위한 협력적 노력 방안을 작성하세요." 
+                            class="w-full p-3 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none leading-relaxed"></textarea>
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t border-slate-200 flex justify-between items-center text-xs text-slate-400">
+                    <span>고등학교 통합과학 탐구활동 지원 시스템 (Google Apps Script 연동형)</span>
+                    <span>인쇄 시 A4 용지 규격에 최적화되어 있습니다.</span>
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <footer class="bg-slate-900 text-slate-400 py-6 mt-12 text-center text-xs no-print">
+        <div class="max-w-7xl mx-auto px-4 space-y-1">
+            <p class="font-medium text-slate-300">고등학교 통합과학 [10통과2-02-02] 먹이 관계와 생태 피라미드 인터랙티브 시뮬레이터</p>
+            <p class="text-slate-500">구글 앱스 스크립트(Google Apps Script) 단독 실행 모듈</p>
+        </div>
+    </footer>
+
+    <!-- Toast Notification Modal -->
+    <div id="toast-modal" class="fixed bottom-5 right-5 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-xl border border-slate-700 text-xs flex items-center gap-3 transition-all duration-300 opacity-0 translate-y-4 pointer-events-none z-50">
+        <i data-lucide="check-circle" id="toast-icon" class="w-5 h-5 text-emerald-400"></i>
+        <span id="toast-msg">메시지가 표시됩니다.</span>
+    </div>
+
+    <script>
+        const ECOSYSTEM_SPECIES = {
+            meadow: {
+                name: '초원 생태계',
+                producer: { name: '풀 / 벼', unit: '포기' },
+                consumer1: { name: '메뚜기 / 토끼', unit: '마리' },
+                consumer2: { name: '개구리 / 매', unit: '마리' }
+            },
+            ocean: {
+                name: '해양 생태계',
+                producer: { name: '식물 플랑크톤', unit: '개체' },
+                consumer1: { name: '동물 플랑크톤 / 멸치', unit: '마리' },
+                consumer2: { name: '삼치 / 다랑어', unit: '마리' }
+            },
+            forest: {
+                name: '산림 생태계',
+                producer: { name: '참나무 / 수풀', unit: '그루' },
+                consumer1: { name: '사슴 / 쥐', unit: '마리' },
+                consumer2: { name: '늑대 / 부엉이', unit: '마리' }
+            }
+        };
+
+        let currentEcoKey = 'meadow';
+        let currentStep = 0;
+        let isAutoPlaying = false;
+        let autoPlayTimer = null;
+        let stepChartInstance = null;
+
+        const BASELINE = { prod: 1000, c1: 100, c2: 10 };
+        let initialConfig = { prod: 1000, c1: 100, c2: 10 };
+        let stepHistory = [];
+
+        window.onload = function() {
+            lucide.createIcons();
+            
+            const today = new Date();
+            document.getElementById('report-date').value = `${today.getFullYear()}년 ${today.getMonth() + 1}월 ${today.getDate()}일`;
+
+            initChart();
+            calculateStepHistory();
+            renderCurrentStep();
+        };
+
+        function setEcosystemType(typeKey) {
+            currentEcoKey = typeKey;
+            
+            document.querySelectorAll('.eco-type-btn').forEach(btn => {
+                btn.classList.remove('bg-emerald-50', 'border-emerald-500', 'text-emerald-800', 'font-bold');
+                btn.classList.add('bg-slate-50', 'border-slate-200', 'text-slate-600');
+            });
+            const activeBtn = document.getElementById(`btn-eco-${typeKey}`);
+            if(activeBtn) {
+                activeBtn.classList.add('bg-emerald-50', 'border-emerald-500', 'text-emerald-800', 'font-bold');
+            }
+
+            const eco = ECOSYSTEM_SPECIES[typeKey];
+            document.getElementById('species-consumer2-name').innerText = eco.consumer2.name;
+            document.getElementById('species-consumer1-name').innerText = eco.consumer1.name;
+            document.getElementById('species-producer-name').innerText = eco.producer.name;
+
+            document.getElementById('lbl-c2-name').innerText = eco.consumer2.name.split('/')[0].trim();
+            document.getElementById('lbl-c1-name').innerText = eco.consumer1.name.split('/')[0].trim();
+            document.getElementById('lbl-prod-name').innerText = eco.producer.name.split('/')[0].trim();
+
+            document.getElementById('pyr-c2-name').innerText = eco.consumer2.name.split('/')[0].trim();
+            document.getElementById('pyr-c1-name').innerText = eco.consumer1.name.split('/')[0].trim();
+            document.getElementById('pyr-prod-name').innerText = eco.producer.name.split('/')[0].trim();
+
+            document.getElementById('rep-c2-name').innerText = eco.consumer2.name.split('/')[0].trim();
+            document.getElementById('rep-c1-name').innerText = eco.consumer1.name.split('/')[0].trim();
+            document.getElementById('rep-prod-name').innerText = eco.producer.name.split('/')[0].trim();
+
+            showToast(`${eco.name}(으)로 변경되었습니다.`);
+            calculateStepHistory();
+            renderCurrentStep();
+        }
+
+        function loadPreset(presetKey) {
+            if(isAutoPlaying) toggleAutoPlay();
+
+            if (presetKey === 'normal') {
+                document.getElementById('slider-prod').value = 1000;
+                document.getElementById('slider-c1').value = 100;
+                document.getElementById('slider-c2').value = 10;
+                showToast('정상 평형 상태 조건이 로드되었습니다.');
+            } else if (presetKey === 'primary_up') {
+                document.getElementById('slider-prod').value = 1000;
+                document.getElementById('slider-c1').value = 320;
+                document.getElementById('slider-c2').value = 10;
+                showToast('1차 소비자 급증 조건이 로드되었습니다.');
+            } else if (presetKey === 'producer_down') {
+                document.getElementById('slider-prod').value = 250;
+                document.getElementById('slider-c1').value = 100;
+                document.getElementById('slider-c2').value = 10;
+                showToast('생산자 감소 조건이 로드되었습니다.');
+            }
+
+            onSliderChange();
+        }
+
+        function onSliderChange() {
+            initialConfig.prod = parseInt(document.getElementById('slider-prod').value);
+            initialConfig.c1 = parseInt(document.getElementById('slider-c1').value);
+            initialConfig.c2 = parseInt(document.getElementById('slider-c2').value);
+
+            document.getElementById('val-prod').innerText = initialConfig.prod;
+            document.getElementById('val-c1').innerText = initialConfig.c1;
+            document.getElementById('val-c2').innerText = initialConfig.c2;
+
+            currentStep = 0;
+            calculateStepHistory();
+            renderCurrentStep();
+        }
+
+        function resetValues() {
+            loadPreset('normal');
+        }
+
+        function calculateStepHistory() {
+            stepHistory = [];
+            
+            let p0 = initialConfig.prod;
+            let c10 = initialConfig.c1;
+            let c20 = initialConfig.c2;
+
+            stepHistory.push({
+                step: 0,
+                name: 'Step 0: 초기 변형 발생',
+                prod: p0, c1: c10, c2: c20,
+                status: getEquilibriumStatus(p0, c10, c20)
+            });
+
+            let p1 = Math.max(50, Math.round(p0 - (c10 - 100) * 2.2));
+            let c1_1 = Math.max(10, Math.round(c10 * (p0 / 1000)));
+            let c2_1 = Math.max(1, Math.round(c20 + (c10 - 100) * 0.12));
+
+            stepHistory.push({
+                step: 1,
+                name: 'Step 1: 먹이 반응 시작',
+                prod: p1, c1: c1_1, c2: c2_1,
+                status: getEquilibriumStatus(p1, c1_1, c2_1)
+            });
+
+            let p2 = Math.max(30, Math.round(p1 + (150 - c1_1) * 1.8)); 
+            let c2_food = c1_1 / Math.max(1, c2_1);
+            let c1_2 = Math.max(5, Math.round(c1_1 - (c2_1 * 2) + (p1 > 600 ? 30 : -20)));
+            let c2_2 = Math.max(1, Math.round(c2_1 * (c2_food > 6 ? 1.2 : 0.6)));
+
+            stepHistory.push({
+                step: 2,
+                name: 'Step 2: 피드백 작용 진행',
+                prod: p2, c1: c1_2, c2: c2_2,
+                status: getEquilibriumStatus(p2, c1_2, c2_2)
+            });
+
+            let p3, c1_3, c2_3;
+            if (p2 < 150 || c1_2 < 15 || (p0 < 300 && c10 > 250)) {
+                p3 = Math.max(20, Math.round(p2 * 0.5));
+                c1_3 = Math.max(2, Math.round(c1_2 * 0.3));
+                c2_3 = Math.max(0, Math.round(c2_2 * 0.2));
+            } else {
+                p3 = Math.round(p2 + (BASELINE.prod - p2) * 0.6);
+                c1_3 = Math.round(c1_2 + (BASELINE.c1 - c1_2) * 0.6);
+                c2_3 = Math.round(c2_2 + (BASELINE.c2 - c2_2) * 0.6);
+            }
+
+            stepHistory.push({
+                step: 3,
+                name: 'Step 3: 회복 진행 또는 붕괴',
+                prod: p3, c1: c1_3, c2: c2_3,
+                status: getEquilibriumStatus(p3, c1_3, c2_3)
+            });
+
+            let p4, c1_4, c2_4;
+            if (p3 < 100 || c1_3 < 10) {
+                p4 = 50; c1_4 = 5; c2_4 = 0;
+            } else {
+                p4 = BASELINE.prod; c1_4 = BASELINE.c1; c2_4 = BASELINE.c2;
+            }
+
+            stepHistory.push({
+                step: 4,
+                name: 'Step 4: 최종 평형 또는 붕괴',
+                prod: p4, c1: c1_4, c2: c2_4,
+                status: getEquilibriumStatus(p4, c1_4, c2_4)
+            });
+
+            updateChartData();
+        }
+
+        function getEquilibriumStatus(p, c1, c2) {
+            if (p <= 100 || c1 <= 10 || c2 === 0) return 'collapsed';
+            const r1 = c1 / p;
+            const r2 = c2 / c1;
+            if (r1 >= 0.05 && r1 <= 0.18 && r2 >= 0.05 && r2 <= 0.18) return 'balanced';
+            return 'imbalanced';
+        }
+
+        function renderCurrentStep() {
+            const data = stepHistory[currentStep];
+            if (!data) return;
+
+            document.getElementById('current-step-num').innerText = currentStep;
+            document.getElementById('step-progress-bar').style.width = `${(currentStep / 4) * 100}%`;
+            document.getElementById('step-badge').innerText = data.name;
+
+            document.getElementById('pyr-c2-val').innerText = data.c2;
+            document.getElementById('pyr-c1-val').innerText = data.c1;
+            document.getElementById('pyr-prod-val').innerText = data.prod;
+
+            document.getElementById('pyr-bar-c2-txt').innerText = `${data.c2} 개체`;
+            document.getElementById('pyr-bar-c1-txt').innerText = `${data.c1} 개체`;
+            document.getElementById('pyr-bar-prod-txt').innerText = `${data.prod} 개체`;
+
+            const widthProd = Math.max(15, Math.min(100, (data.prod / 2000) * 100));
+            const widthC1 = Math.max(12, Math.min(90, (data.c1 / 400) * 80));
+            const widthC2 = Math.max(10, Math.min(70, (data.c2 / 50) * 60));
+
+            document.getElementById('pyr-bar-prod').style.width = `${widthProd}%`;
+            document.getElementById('pyr-bar-c1').style.width = `${widthC1}%`;
+            document.getElementById('pyr-bar-c2').style.width = `${widthC2}%`;
+
+            const statusTag = document.getElementById('pyramid-status-tag');
+            if (data.status === 'balanced') {
+                statusTag.className = 'text-xs px-2.5 py-1 rounded-full font-bold bg-emerald-100 text-emerald-800';
+                statusTag.innerText = '⚖️ 정상 생태계 평형 유지 중';
+            } else if (data.status === 'imbalanced') {
+                statusTag.className = 'text-xs px-2.5 py-1 rounded-full font-bold bg-amber-100 text-amber-800';
+                statusTag.innerText = '⚠️ 불평형 상태 (피드백 진행 중)';
+            } else {
+                statusTag.className = 'text-xs px-2.5 py-1 rounded-full font-bold bg-rose-100 text-rose-800 animate-pulse';
+                statusTag.innerText = '💀 생태계 파괴 / 붕괴';
+            }
+
+            document.getElementById('btn-prev').disabled = (currentStep === 0);
+            document.getElementById('btn-next').disabled = (currentStep === 4);
+
+            updateDataAnalysisGuide(data);
+        }
+
+        function nextStep() {
+            if (currentStep < 4) {
+                currentStep++;
+                renderCurrentStep();
+            } else if (isAutoPlaying) {
+                toggleAutoPlay();
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > 0) {
+                currentStep--;
+                renderCurrentStep();
+            }
+        }
+
+        function resetSimulation() {
+            if (isAutoPlaying) toggleAutoPlay();
+            currentStep = 0;
+            renderCurrentStep();
+            showToast('시뮬레이션이 초기 단계(Step 0)로 리셋되었습니다.');
+        }
+
+        function toggleAutoPlay() {
+            isAutoPlaying = !isAutoPlaying;
+            const btn = document.getElementById('btn-autoplay');
+            const icon = document.getElementById('icon-play');
+            const txt = document.getElementById('txt-play');
+
+            if (isAutoPlaying) {
+                btn.className = 'py-2.5 px-2 bg-rose-500 hover:bg-rose-600 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1';
+                icon.setAttribute('data-lucide', 'pause');
+                txt.innerText = '정지';
+                lucide.createIcons();
+
+                if (currentStep >= 4) currentStep = 0;
+
+                autoPlayTimer = setInterval(() => {
+                    if (currentStep < 4) {
+                        nextStep();
+                    } else {
+                        toggleAutoPlay();
+                    }
+                }, 1800);
+            } else {
+                btn.className = 'py-2.5 px-2 bg-amber-500 hover:bg-amber-600 text-slate-900 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1';
+                icon.setAttribute('data-lucide', 'play');
+                txt.innerText = '자동';
+                lucide.createIcons();
+                clearInterval(autoPlayTimer);
+            }
+        }
+
+        function updateDataAnalysisGuide(currentData) {
+            const container = document.getElementById('analysis-guide-content');
+            const qText = document.getElementById('guide-question-text');
+            const eco = ECOSYSTEM_SPECIES[currentEcoKey];
+
+            const c1Name = eco.consumer1.name.split('/')[0].trim();
+            const c2Name = eco.consumer2.name.split('/')[0].trim();
+            const prodName = eco.producer.name.split('/')[0].trim();
+
+            let html = '';
+            let question = '';
+
+            const initP = initialConfig.prod;
+            const initC1 = initialConfig.c1;
+            const initC2 = initialConfig.c2;
+
+            if (currentStep === 0) {
+                if (initC1 > 180) {
+                    html = `<p class="font-semibold text-amber-300">🔍 현상: 1차 소비자(${c1Name}) 개체수가 급증한 초기 상태입니다.</p>
+                            <p>• <strong>원인 추론:</strong> 외부 요인으로 1차 소비자가 늘었습니다.</p>
+                            <p>• <strong>예상 영향:</strong> 생산자(${prodName})는 감소하고, 2차 소비자(${c2Name})는 일시적으로 증가할 것입니다.</p>`;
+                    question = `1차 소비자의 급증이 하위 및 상위 단계 생물에게 미치는 상반된 영향을 관찰하세요.`;
+                } else if (initP < 500) {
+                    html = `<p class="font-semibold text-rose-300">🔍 현상: 생산자(${prodName}) 개체수가 급감한 상태입니다.</p>
+                            <p>• <strong>원인 추론:</strong> 가뭄이나 환경 변화로 에너지 공급원이 축소되었습니다.</p>
+                            <p>• <strong>예상 영향:</strong> 1차 소비자가 먹이 부족으로 기아에 처하여 감소하게 됩니다.</p>`;
+                    question = `생산자의 감소가 생태 피라미드의 지지 기반에 어떤 연쇄적 영향을 미치는지 서술해보세요.`;
+                } else {
+                    html = `<p class="font-semibold text-emerald-300">🌿 현상: 정상 평형 상태(1000 : 100 : 10)를 유지하고 있습니다.</p>
+                            <p>• 슬라이더를 조절하여 개체수 변화를 일으킨 후 피드백 과정을 확인해보세요.</p>`;
+                    question = `상위 영양 단계로 갈수록 에너지 양과 개체수가 감소하는 까닭은 무엇인가요?`;
+                }
+            } else if (currentStep === 1) {
+                html = `<p class="font-semibold text-amber-300">⚡ Step 1: 개체수 불평형에 따른 직접적 먹이 관계 반응</p>
+                        <p>• 생산자: ${currentData.prod} | 1차: ${currentData.c1} | 2차: ${currentData.c2}</p>`;
+                question = `어느 단계의 생물이 가장 먼저 생존 영향을 받는지 관찰하세요.`;
+            } else if (currentStep === 2) {
+                html = `<p class="font-semibold text-indigo-200">🔄 Step 2: 음성 피드백(Negative Feedback) 작용 반응</p>
+                        <p>• 개체수가 너무 늘어난 종은 먹이 부족과 천적 증가로 다시 줄어들기 시작합니다.</p>`;
+                question = `피드백 작용이 생태계 자정 능력에서 어떤 역할을 하는지 서술하세요.`;
+            } else if (currentStep === 3) {
+                if (currentData.status === 'collapsed') {
+                    html = `<p class="font-semibold text-rose-300">🚨 Step 3: 생태계 회복 한계 초과 (파괴)</p>`;
+                    question = `생태계가 회복력을 잃고 붕괴된 원인을 분석해보세요.`;
+                } else {
+                    html = `<p class="font-semibold text-emerald-300">🌱 Step 3: 평형 재복원 단계</p>`;
+                    question = `피드백 작용을 통해 원래 상태로 복원되는 순서를 정리해보세요.`;
+                }
+            } else if (currentStep === 4) {
+                if (currentData.status === 'collapsed') {
+                    html = `<p class="font-semibold text-rose-400">💀 Step 4: 최종 붕괴 상태</p>`;
+                    question = `인간 활동으로 생태계가 파괴되었을 때 이를 보전하기 위한 협력 방안은 무엇일까요?`;
+                } else {
+                    html = `<p class="font-semibold text-emerald-300">⚖️ Step 4: 최종 평형 상태 회복 완료!</p>`;
+                    question = `시뮬레이션 결과를 바탕으로 아래 탐구 보고서를 작성해보세요.`;
+                }
+            }
+
+            container.innerHTML = html;
+            qText.innerText = question;
+        }
+
+        function initChart() {
+            const ctx = document.getElementById('stepChart').getContext('2d');
+            stepChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Step 0', 'Step 1', 'Step 2', 'Step 3', 'Step 4'],
+                    datasets: [
+                        { label: '생산자', data: [1000, 1000, 1000, 1000, 1000], borderColor: '#22c55e', backgroundColor: 'rgba(34, 197, 94, 0.1)', borderWidth: 2.5, tension: 0.2 },
+                        { label: '1차 소비자', data: [100, 100, 100, 100, 100], borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.1)', borderWidth: 2.5, tension: 0.2 },
+                        { label: '2차 소비자', data: [10, 10, 10, 10, 10], borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', borderWidth: 2.5, tension: 0.2 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+
+        function updateChartData() {
+            if (!stepChartInstance) return;
+            stepChartInstance.data.datasets[0].data = stepHistory.map(s => s.prod);
+            stepChartInstance.data.datasets[1].data = stepHistory.map(s => s.c1);
+            stepChartInstance.data.datasets[2].data = stepHistory.map(s => s.c2);
+            stepChartInstance.update();
+        }
+
+        function captureCurrentDataToReport() {
+            const tbody = document.getElementById('report-data-tbody');
+            tbody.innerHTML = '';
+            const eco = ECOSYSTEM_SPECIES[currentEcoKey];
+
+            stepHistory.forEach(s => {
+                const tr = document.createElement('tr');
+                let badge = s.status === 'balanced' ? '<span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold">평형 유지</span>' :
+                            (s.status === 'imbalanced' ? '<span class="px-2 py-0.5 rounded bg-amber-100 text-amber-800 font-bold">피드백 진행 중</span>' : '<span class="px-2 py-0.5 rounded bg-rose-100 text-rose-800 font-bold">생태계 파괴</span>');
+
+                tr.innerHTML = `
+                    <td class="p-2.5 font-semibold border-r border-slate-200 bg-slate-50">${s.name}</td>
+                    <td class="p-2.5 border-r border-slate-200 font-bold text-emerald-700">${s.prod} ${eco.producer.unit}</td>
+                    <td class="p-2.5 border-r border-slate-200 font-bold text-amber-700">${s.c1} ${eco.consumer1.unit}</td>
+                    <td class="p-2.5 border-r border-slate-200 font-bold text-rose-700">${s.c2} ${eco.consumer2.unit}</td>
+                    <td class="p-2.5">${badge}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            const analysisBox = document.getElementById('report-analysis');
+            if(!analysisBox.value.trim()) {
+                analysisBox.value = `[데이터 분석 결과]\n초기 조건(Step 0)에서 변형된 개체수가 먹이사슬에 미친 직접적 영향을 관찰하였습니다. Step 1~2 과정을 통해 먹이 부족 및 천적 증가로 인한 음성 피드백 작용이 일어났으며, Step 4에 이르러 평형 상태로 회복되는 현상을 확인했습니다.`;
+            }
+
+            showToast('시뮬레이션 수치가 보고서 데이터 표에 수집되었습니다.');
+            document.getElementById('report-section').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function submitToGoogleSheet() {
+            const reportData = {
+                studentName: document.getElementById('report-student-name').value,
+                studentId: document.getElementById('report-student-id').value,
+                ecosystemType: ECOSYSTEM_SPECIES[currentEcoKey].name,
+                hypothesis: document.getElementById('report-hypothesis').value,
+                analysis: document.getElementById('report-analysis').value,
+                conclusion: document.getElementById('report-conclusion').value
+            };
+
+            if (!reportData.studentName) {
+                showToast('성명(작성자)을 입력해 주세요.');
+                return;
+            }
+
+            showToast('구글 서버로 제출 중입니다...');
+
+            // Google Apps Script client API call
+            if (typeof google !== 'undefined' && google.script && google.script.run) {
+                google.script.run
+                    .withSuccessHandler(function(response) {
+                        showToast(response.message || '성공적으로 제출되었습니다!');
+                    })
+                    .withFailureHandler(function(err) {
+                        showToast('제출 실패: ' + err.message);
+                    })
+                    .saveReportData(reportData);
+            } else {
+                // Standalone test environment fallback
+                setTimeout(() => {
+                    showToast('로컬 테스트 환경: 데이터가 정상 전송 처리되었습니다.');
+                }, 1000);
+            }
+        }
+
+        function showToast(msg) {
+            const modal = document.getElementById('toast-modal');
+            document.getElementById('toast-msg').innerText = msg;
+            
+            modal.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
+            modal.classList.add('opacity-100', 'translate-y-0');
+
+            setTimeout(() => {
+                modal.classList.remove('opacity-100', 'translate-y-0');
+                modal.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
