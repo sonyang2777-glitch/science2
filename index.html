@@ -85,7 +85,7 @@
                 <div>
                     <div class="flex items-center gap-2">
                         <span class="text-[11px] font-bold tracking-wider text-emerald-300 bg-emerald-950/60 px-2 py-0.5 rounded-md border border-emerald-700/50 uppercase">고등학교 통합과학 [10통과2-02-02]</span>
-                        <span class="text-[10px] font-semibold text-amber-300 bg-amber-950/60 px-2 py-0.5 rounded-md border border-amber-700/50">탐구 실습용</span>
+                        <span class="text-[10px] font-semibold text-amber-300 bg-amber-950/60 px-2 py-0.5 rounded-md border border-amber-700/50">Realtime DB 연동</span>
                     </div>
                     <h1 class="text-lg sm:text-xl font-extrabold tracking-tight mt-0.5 text-white flex items-center gap-2">
                         생태 피라미드와 생태계 평형 탐구 시뮬레이터
@@ -211,7 +211,7 @@
                                     🔢 개체수 (개체)
                                 </button>
                                 <button onclick="setMetricMode('biomass')" id="btn-metric-biomass" class="metric-btn p-2 rounded-xl text-xs font-semibold border text-center transition bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100">
-                                    ⚖️ 생물량 (g/m²)
+                                    秤 생물량 (g/m²)
                                 </button>
                                 <button onclick="setMetricMode('energy')" id="btn-metric-energy" class="metric-btn p-2 rounded-xl text-xs font-semibold border text-center transition bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100">
                                     ⚡ 에너지 (kcal)
@@ -490,7 +490,7 @@
                         <i data-lucide="wand-2" class="w-4 h-4"></i> 보고서 초안 자동 작성
                     </button>
                     <button onclick="submitReportToFirebaseUI()" class="px-3.5 py-2 text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-sm transition flex items-center gap-1.5">
-                        <i data-lucide="database" class="w-4 h-4"></i> Firebase DB / 제출
+                        <i data-lucide="database" class="w-4 h-4"></i> Realtime DB 제출
                     </button>
                     <button onclick="window.print()" class="px-3.5 py-2 text-xs font-bold bg-slate-800 hover:bg-slate-900 text-white rounded-xl shadow-sm transition flex items-center gap-1.5">
                         <i data-lucide="printer" class="w-4 h-4"></i> 인쇄 / PDF 저장
@@ -614,7 +614,7 @@
     <footer class="bg-slate-900 text-slate-400 py-6 mt-12 text-center text-xs no-print border-t border-slate-800">
         <div class="max-w-7xl mx-auto px-4 space-y-1.5">
             <p class="font-medium text-slate-300">고등학교 통합과학 [10통과2-02-02] 먹이 관계와 생태 피라미드 시뮬레이터</p>
-            <p class="text-slate-500">Firebase Cloud Realtime Database & Firestore DB 연동 지원</p>
+            <p class="text-slate-500">Firebase Cloud Realtime Database 연동 완료</p>
         </div>
     </footer>
 
@@ -669,7 +669,7 @@
         <div class="bg-white rounded-2xl max-w-xl w-full p-6 space-y-4 shadow-2xl border border-slate-200">
             <div class="flex justify-between items-center border-b border-slate-200 pb-3">
                 <h3 class="font-bold text-base text-slate-900 flex items-center gap-2">
-                    <i data-lucide="database" class="w-5 h-5 text-blue-600"></i> Firebase 데이터베이스 연동 정보
+                    <i data-lucide="database" class="w-5 h-5 text-blue-600"></i> Firebase Realtime DB 연동 정보
                 </h3>
                 <button onclick="closeGasModal()" class="text-slate-400 hover:text-slate-700">
                     <i data-lucide="x" class="w-5 h-5"></i>
@@ -677,16 +677,16 @@
             </div>
 
             <div class="space-y-3 text-xs text-slate-600 leading-relaxed">
-                <p>현재 애플리케이션에 설정된 Firebase Database 엔드포인트 URL입니다.</p>
+                <p>현재 애플리케이션에 설정된 Firebase Realtime Database URL입니다.</p>
                 
                 <div class="bg-slate-900 text-slate-200 p-3 rounded-xl font-mono text-[11px] overflow-x-auto space-y-1">
                     <p class="text-emerald-400">// Firebase Config</p>
                     <p><span class="text-blue-400">databaseURL</span>: "https://science2-c9ed0-default-rtdb.asia-southeast1.firebasedatabase.app/"</p>
                     <p><span class="text-blue-400">projectId</span>: "science2-c9ed0"</p>
-                    <p><span class="text-amber-300">Status</span>: Connected (Firebase Firestore & Auth Ready)</p>
+                    <p><span class="text-amber-300">Status</span>: Realtime Database Connected</p>
                 </div>
 
-                <p class="text-slate-500">학생 제출 보고서는 Firebase 데이터베이스에 실시간으로 전송되며, [교사용 대시보드]에서 즉시 확인 가능합니다.</p>
+                <p class="text-slate-500">학생 제출 보고서는 지정된 Realtime Database에 즉시 저장되며, [교사용 대시보드]에서 실시간으로 확인 가능합니다.</p>
             </div>
 
             <div class="pt-2 text-right">
@@ -710,9 +710,9 @@
                     <div>
                         <h3 class="font-extrabold text-lg text-slate-900 flex items-center gap-2">
                             교사용 실시간 탐구 보고서 대시보드
-                            <span class="text-xs bg-indigo-100 text-indigo-800 font-bold px-2.5 py-0.5 rounded-full border border-indigo-300">Firebase Realtime Sync</span>
+                            <span class="text-xs bg-indigo-100 text-indigo-800 font-bold px-2.5 py-0.5 rounded-full border border-indigo-300">Realtime DB Sync</span>
                         </h3>
-                        <p class="text-xs text-slate-500 mt-0.5">Firebase DB에 제출된 학생들의 실시간 탐구 보고서를 조회하고 검토합니다.</p>
+                        <p class="text-xs text-slate-500 mt-0.5">Firebase Realtime DB에 제출된 학생들의 실시간 탐구 보고서를 조회하고 검토합니다.</p>
                     </div>
                 </div>
                 
@@ -776,7 +776,7 @@
                     <tbody id="teacher-reports-tbody" class="divide-y divide-slate-200 text-slate-700">
                         <tr>
                             <td colspan="6" class="p-8 text-center text-slate-400 italic">
-                                Firebase DB에서 제출 내역을 불러오는 중입니다...
+                                Realtime DB에서 제출 내역을 불러오는 중입니다...
                             </td>
                         </tr>
                     </tbody>
@@ -810,28 +810,36 @@
         </div>
     </div>
 
-    <!-- Firebase Standard Integration Script -->
+    <!-- Firebase Realtime Database Integration Script -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getDatabase, ref, push, set, onValue } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
 
-        // Global variables provided by environment or standard fallbacks
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'science2-c9ed0';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' 
-            ? JSON.parse(__firebase_config) 
-            : {
-                databaseURL: "https://science2-c9ed0-default-rtdb.asia-southeast1.firebasedatabase.app/",
-                projectId: "science2-c9ed0"
-            };
+        // Target Firebase Realtime Database URL specified by user
+        const RTDB_URL = "https://science2-c9ed0-default-rtdb.asia-southeast1.firebasedatabase.app/";
+
+        let firebaseConfig = {
+            databaseURL: RTDB_URL,
+            projectId: "science2-c9ed0"
+        };
+
+        if (typeof __firebase_config !== 'undefined') {
+            try {
+                const parsed = JSON.parse(__firebase_config);
+                firebaseConfig = { ...firebaseConfig, ...parsed };
+            } catch (e) {
+                console.warn("Using default Realtime DB config fallback.");
+            }
+        }
+        firebaseConfig.databaseURL = RTDB_URL;
 
         const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
         const auth = getAuth(app);
+        const rtdb = getDatabase(app, RTDB_URL);
 
         let currentUser = null;
 
-        // Auth initialization
         async function initAuth() {
             try {
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
@@ -851,15 +859,18 @@
             }
         });
 
-        // Real-time Firestore Sync for Teacher Dashboard
+        // Real-time Database Sync for Teacher Dashboard
         function listenReports() {
-            if (!db) return;
-            const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'reports');
-            onSnapshot(colRef, (snapshot) => {
+            if (!rtdb) return;
+            const reportsRef = ref(rtdb, 'reports');
+            onValue(reportsRef, (snapshot) => {
+                const data = snapshot.val();
                 const reports = [];
-                snapshot.forEach(doc => {
-                    reports.push({ id: doc.id, ...doc.data() });
-                });
+                if (data) {
+                    Object.keys(data).forEach(key => {
+                        reports.push({ id: key, ...data[key] });
+                    });
+                }
                 // Sort by timestamp descending
                 reports.sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
                 window.allReportsData = reports;
@@ -867,11 +878,11 @@
                     window.updateTeacherDashboardUI(reports);
                 }
             }, (err) => {
-                console.error("Firestore Listen Error:", err);
+                console.error("Realtime DB Listen Error:", err);
             });
         }
 
-        // Window function to save report to Firebase
+        // Window function to save report to Realtime Database
         window.saveReportToFirebase = async function(reportObj) {
             if (!currentUser) {
                 await initAuth();
@@ -881,15 +892,16 @@
                 return false;
             }
             try {
-                const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'reports');
-                await addDoc(colRef, {
+                const reportsRef = ref(rtdb, 'reports');
+                const newReportRef = push(reportsRef);
+                await set(newReportRef, {
                     ...reportObj,
                     userId: auth.currentUser.uid,
                     timestamp: new Date().toISOString()
                 });
                 return true;
             } catch(e) {
-                console.error("Error saving report to Firestore:", e);
+                console.error("Error saving report to Realtime Database:", e);
                 return false;
             }
         };
@@ -1054,16 +1066,12 @@
         }
 
         function recalculateSteps() {
-            // Get slider step 0 inputs
             const rawC2 = parseFloat(document.getElementById('slider-c2').value);
             const rawC1 = parseFloat(document.getElementById('slider-c1').value);
             const rawProd = parseFloat(document.getElementById('slider-prod').value);
 
-            // Step 0: User setup
             const step0 = { prod: rawProd, c1: rawC1, c2: rawC2 };
 
-            // Step 1: Immediate trophic effect
-            // e.g. If C1 increased: Prod gets eaten fast (decreases), C2 gets more food (increases)
             const dC1_rel = (rawC1 - 100) / 100;
             const dProd_rel = (rawProd - 1000) / 1000;
             const dC2_rel = (rawC2 - 10) / 10;
@@ -1074,28 +1082,23 @@
 
             const step1 = { prod: s1_prod, c1: s1_c1, c2: s1_c2 };
 
-            // Step 2: Negative feedback action starts
-            // High C2 & depleted Prod forces C1 to decrease drastically
             let s2_c1 = Math.max(15, Math.round(s1_c1 - (s1_c1 * 0.45 * (s1_c2 / 10)) + (s1_prod > 800 ? 20 : -30)));
             let s2_prod = Math.max(100, Math.round(s1_prod + (s1_c1 < 100 ? 250 : -50)));
             let s2_c2 = Math.max(2, Math.round(s1_c2 + (s1_c1 > 150 ? 5 : -3)));
 
             const step2 = { prod: s2_prod, c1: s2_c1, c2: s2_c2 };
 
-            // Step 3: Ecosystem recovering towards balance
             let s3_prod = Math.round(s2_prod + (1000 - s2_prod) * 0.65);
             let s3_c1 = Math.round(s2_c1 + (100 - s2_c1) * 0.65);
             let s3_c2 = Math.round(s2_c2 + (10 - s2_c2) * 0.65);
 
             const step3 = { prod: s3_prod, c1: s3_c1, c2: s3_c2 };
 
-            // Step 4: Full restoration of equilibrium
             const step4 = { prod: 1000, c1: 100, c2: 10 };
 
-            // Convert to selected metric unit multipliers
             let mult = 1;
-            if (state.metricMode === 'biomass') mult = 2.5; // g/m² scale
-            else if (state.metricMode === 'energy') mult = 10; // kcal scale
+            if (state.metricMode === 'biomass') mult = 2.5;
+            else if (state.metricMode === 'energy') mult = 10;
 
             state.simulationSteps = [step0, step1, step2, step3, step4].map(s => ({
                 prod: Math.round(s.prod * mult),
@@ -1108,12 +1111,10 @@
             const currentData = state.simulationSteps[state.currentStep];
             if (!currentData) return;
 
-            // Slider label values update
             document.getElementById('val-c2').textContent = document.getElementById('slider-c2').value;
             document.getElementById('val-c1').textContent = document.getElementById('slider-c1').value;
             document.getElementById('val-prod').textContent = document.getElementById('slider-prod').value;
 
-            // Step text
             document.getElementById('current-step-num').textContent = state.currentStep;
             document.getElementById('step-progress-bar').style.width = `${(state.currentStep / 4) * 100}%`;
 
@@ -1126,11 +1127,9 @@
             ];
             document.getElementById('step-badge').textContent = stepNames[state.currentStep];
 
-            // Disable buttons
             document.getElementById('btn-prev').disabled = state.currentStep === 0;
             document.getElementById('btn-next').disabled = state.currentStep === 4;
 
-            // Update Pyramid Display
             document.getElementById('pyr-c2-val').textContent = currentData.c2;
             document.getElementById('pyr-c1-val').textContent = currentData.c1;
             document.getElementById('pyr-prod-val').textContent = currentData.prod;
@@ -1139,7 +1138,6 @@
             document.getElementById('pyr-bar-c1-txt').textContent = currentData.c1;
             document.getElementById('pyr-bar-prod-txt').textContent = currentData.prod;
 
-            // Calculate Pyramid Widths (%) based on relative ratios
             const maxVal = Math.max(currentData.prod, 1);
             const wProd = Math.min(95, Math.max(20, (currentData.prod / maxVal) * 90));
             const wC1 = Math.min(90, Math.max(15, (currentData.c1 / currentData.prod) * 200));
@@ -1149,14 +1147,12 @@
             document.getElementById('pyr-bar-c1').style.width = `${wC1}%`;
             document.getElementById('pyr-bar-c2').style.width = `${wC2}%`;
 
-            // Calculate Ecological Efficiencies
             const effC1 = ((currentData.c1 / currentData.prod) * 100).toFixed(1);
             const effC2 = ((currentData.c2 / currentData.c1) * 100).toFixed(1);
 
             document.getElementById('eff-c1').textContent = `${effC1}%`;
             document.getElementById('eff-c2').textContent = `${effC2}%`;
 
-            // Status Tag
             const tag = document.getElementById('pyramid-status-tag');
             if (state.currentStep === 4 || (currentData.c1 === state.simulationSteps[0].c1 && state.currentStep === 0)) {
                 tag.className = 'text-xs px-3 py-1 rounded-full font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300';
@@ -1177,7 +1173,6 @@
             const s = state.species[state.ecoType];
             const content = document.getElementById('analysis-guide-content');
             const step = state.currentStep;
-            const currentData = state.simulationSteps[step];
 
             let html = '';
 
@@ -1330,7 +1325,6 @@
 
         function captureCurrentDataToReport() {
             const tbody = document.getElementById('report-data-tbody');
-            const s = state.species[state.ecoType];
             const unit = state.units[state.metricMode];
 
             let html = '';
@@ -1367,21 +1361,18 @@
         function autoDraftReportText() {
             const s = state.species[state.ecoType];
             
-            // Auto draft Hypothesis
             const hypoText = `생태계 평형 상태에서 인위적 혹은 환경적 영향으로 1차 소비자(${s.c1})의 개체수가 일시적으로 급증하더라도, 먹이 관계에 따른 음성 피드백(Negative Feedback) 작용에 의해 생태계 피라미드의 각 영양 단계가 다시 원래의 안정된 평형 상태를 회복할 것이다.`;
             document.getElementById('report-hypothesis').value = hypoText;
 
-            // Auto draft Data Analysis
             const analysisText = `[데이터 분석 및 음성 피드백 작용 추론]
 1. Step 0 -> Step 1: 1차 소비자(${s.c1})가 일시적으로 급증하자, 하위 영양 단계인 생산자(${s.prod})는 먹히는 양이 늘어나 감소하였고, 상위 영양 단계인 2차 소비자(${s.c2})는 풍부한 먹이 공급으로 개체수가 증가함.
 2. Step 2 (음성 피드백 발동): 1차 소비자(${s.c1})는 먹이(생산자)의 부족과 천적(2차 소비자)의 포식 압력 증가라는 두 가지 억제 요인에 의해 다시 빠르게 감소함.
 3. Step 3 -> Step 4: 1차 소비자가 감소하면서 생산자(${s.prod})가 다시 회복되고 2차 소비자(${s.c2})도 조정되어 생태계 평형이 원래 피라미드 비율로 복원됨.`;
             document.getElementById('report-analysis').value = analysisText;
 
-            // Auto draft Conclusion
             const conclusionText = `[가설 검증 및 결론]
 실험 가설은 타당함이 검증됨. 생태계는 먹이 그물을 통한 음성 피드백 자정 능력을 지니고 있어 일시적 변형을 자체 복원함.
-그러나 남획, 서식지 파괴, 과도한 환경 오염 등으로 특정 생물 종이 멸종하거나 한계점을 넘어서는 큰 충격이 가해지면 자정 복원력을 상실하고 생태 피라미드가 완전히 파괴될 수 있으므로, 생물 다모양성 및 생태계 보호 조치가 필수적임.`;
+그러나 남획, 서식지 파괴, 과도한 환경 오염 등으로 특정 생물 종이 멸종하거나 한계점을 넘어서는 큰 충격이 가해지면 자정 복원력을 상실하고 생태 피라미드가 완전히 파괴될 수 있으므로, 생물 다양성 및 생태계 보호 조치가 필수적임.`;
             document.getElementById('report-conclusion').value = conclusionText;
 
             captureCurrentDataToReport();
@@ -1412,14 +1403,14 @@
                 simulationData: state.simulationSteps
             };
 
-            showToast("Firebase DB 전송 중...", "info");
+            showToast("Realtime DB 전송 중...", "info");
 
             if (window.saveReportToFirebase) {
                 const success = await window.saveReportToFirebase(reportObj);
                 if (success) {
-                    showToast("🎉 탐구 보고서가 Firebase DB에 성공적으로 저장되었습니다!", "success");
+                    showToast("🎉 탐구 보고서가 Realtime DB에 성공적으로 저장되었습니다!", "success");
                 } else {
-                    showToast("Firebase DB 저장 실패. 다시 시도해 주세요.", "error");
+                    showToast("Realtime DB 저장 실패. 다시 시도해 주세요.", "error");
                 }
             } else {
                 showToast("Firebase가 아직 로드되지 않았습니다.", "error");
@@ -1466,7 +1457,6 @@
                 return;
             }
 
-            // Calculate metrics
             const ecoCounts = {};
             reports.forEach(r => {
                 const eco = r.ecosystemType || 'meadow';
@@ -1588,20 +1578,3 @@
     </script>
 </body>
 </html>
-```
-
-### 주요 기능 및 특징:
-1. **Firebase DB 연동**:
-   - `https://science2-c9ed0-default-rtdb.asia-southeast1.firebasedatabase.app/` 데이터베이스 구성에 맞춘 Firebase JS SDK 11.6.1 ES 모듈 통합
-   - 익명 인증(`signInAnonymously`) 자동 처리 및 클라우드 데이터 전송
-   - **실시간 리스너 (`onSnapshot`)**를 통해 교사용 대시보드에서 학생 제출 내역이 실시간 자동 동기화
-2. **인터랙티브 생태계 피라미드 시뮬레이터**:
-   - 초원 / 해양 / 산림 생태계별 종 구성 자동 반영
-   - 개체수 / 생물량(g/m²) / 에너지(kcal) 단위 전환 지원
-   - 음성 피드백(Negative Feedback) 작용에 따른 **Step 0 ~ Step 4 단계별 피라미드 변형 애니메이션 및 Chart.js 그래프 연동**
-3. **탐구 보고서 자동화 & 제출**:
-   - 탐구 데이터를 보고서 표로 자동 수집
-   - 가설, 결과 분석, 결론 초안 자동 작성 지원
-   - 인쇄 및 PDF 저장용 CSS 프리셋 완비
-
-오른쪽 에디터 화면의 **`Preview`** 버튼을 눌러 시뮬레이터를 직접 테스트해 보실 수 있습니다!
